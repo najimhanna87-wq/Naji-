@@ -1,0 +1,74 @@
+name: Build Android APK (v64 / arm64)
+
+# Produces a release APK for arm64-v8a (v64). v32 (armeabi-v7a) is
+# intentionally left out for now — driven by buildArchs in app.config.ts.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/apk-v64-v32-release-6vgci3
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "constants/**"
+      - "hooks/**"
+      - "assets/**"
+      - "app.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android-build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prebuild Android project
+        run: npx expo prebuild --platform android --no-install
+        env:
+          EXPO_NO_TELEMETRY: "1"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build release APK (arm64-v8a)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+
+      - name: Locate & rename APK
+        id: apk
+        run: |
+          set -e
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          echo "Found APK: $APK"
+          OUT="SimaStream-v3.0.0-arm64-v8a-release.apk"
+          cp "$APK" "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          ls -la "$OUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: simastream-arm64-v8a-release
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+          retention-days: 14

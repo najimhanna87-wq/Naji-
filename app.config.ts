@@ -116,7 +116,9 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
-          buildArchs: ["armeabi-v7a", "arm64-v8a"],
+          // v64 only for now (arm64-v8a). v32 (armeabi-v7a) is intentionally
+          // left out until it's needed again.
+          buildArchs: ["arm64-v8a"],
           minSdkVersion: 24,
         },
       },
