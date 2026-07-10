@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+/android
+/ios
+
+# Metro
+.metro-health-check*
+
+# debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# macOS
+.DS_Store
+
+# env
+.env*.local
+.env
+
+# build artifacts (APKs delivered separately, not committed)
+*.apk
+*.aab
+*.keystore
+!debug.keystore
