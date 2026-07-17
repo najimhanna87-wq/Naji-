@@ -17,7 +17,7 @@ There are two things people usually want:
 | Goal | Use this | Gives you |
 |------|----------|-----------|
 | A terminal / command line on the laptop | **SSH** | Text shell, file copy (`scp`/`sftp`), port forwarding |
-| The full graphical desktop | **Remote Desktop / VNC** | Mouse + keyboard + screen |
+| The full graphical desktop | **Remote Desktop / VNC** ([full guide](docs/remote-desktop.md)) | Mouse + keyboard + screen |
 
 You can enable one or both. SSH is lighter, safer, and scriptable; a remote
 desktop is heavier but lets you use apps visually.
@@ -156,7 +156,15 @@ network. To reach the laptop from anywhere, pick **one**:
 
 1. **Tailscale (easiest & safest).** Install on both machines, sign in, and they
    get private, encrypted addresses — no router changes, no exposed ports.
-   <https://tailscale.com/download>
+   Run the helper script for your OS:
+   ```bash
+   sudo ./scripts/setup-tailscale-linux.sh     # Linux
+   ./scripts/setup-tailscale-macos.sh          # macOS
+   ```
+   ```powershell
+   .\scripts\setup-tailscale-windows.ps1       # Windows (as Administrator)
+   ```
+   Or download manually: <https://tailscale.com/download>
 2. **VPN into your home network** (many routers have a built-in WireGuard/OpenVPN
    server).
 3. **Port forwarding** on your router (advanced, riskiest). Only with key-based
@@ -185,9 +193,13 @@ See [`docs/harden-ssh.md`](docs/harden-ssh.md) for step-by-step SSH hardening.
 .
 ├── README.md
 ├── docs/
-│   └── harden-ssh.md              # SSH key setup + hardening
+│   ├── harden-ssh.md              # SSH key setup + hardening
+│   └── remote-desktop.md          # Graphical desktop (RDP/VNC) per OS
 └── scripts/
     ├── enable-remote-linux.sh     # Enable SSH on Linux
     ├── enable-remote-macos.sh     # Enable Remote Login on macOS
-    └── enable-remote-windows.ps1  # Enable OpenSSH Server on Windows
+    ├── enable-remote-windows.ps1  # Enable OpenSSH Server on Windows
+    ├── setup-tailscale-linux.sh   # Reach the laptop from anywhere (Linux)
+    ├── setup-tailscale-macos.sh   # Reach the laptop from anywhere (macOS)
+    └── setup-tailscale-windows.ps1 # Reach the laptop from anywhere (Windows)
 ```
