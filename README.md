@@ -194,7 +194,9 @@ See [`docs/harden-ssh.md`](docs/harden-ssh.md) for step-by-step SSH hardening.
 ├── README.md
 ├── docs/
 │   ├── harden-ssh.md              # SSH key setup + hardening
-│   └── remote-desktop.md          # Graphical desktop (RDP/VNC) per OS
+│   ├── remote-desktop.md          # Graphical desktop (RDP/VNC) per OS
+│   └── control-laptop-from-phone-windows.md  # Run Claude Code on your
+│                                              # Windows laptop, from your phone
 └── scripts/
     ├── enable-remote-linux.sh     # Enable SSH on Linux
     ├── enable-remote-macos.sh     # Enable Remote Login on macOS
