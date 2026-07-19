@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - claude/apk-v64-v32-release-6vgci3
+      - claude/simastream-app-link-a0phgx
     paths:
       - "app/**"
       - "components/**"
