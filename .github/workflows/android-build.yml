@@ -20,6 +20,9 @@ on:
       - "package-lock.json"
       - ".github/workflows/android-build.yml"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -73,3 +76,14 @@ jobs:
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
           retention-days: 14
+
+      # Publish to a fixed "latest" release so the APK has a stable,
+      # public direct-download URL that needs no GitHub login:
+      # https://github.com/najimhanna87-wq/Naji-/releases/download/latest/SimaStream-v3.0.0-arm64-v8a-release.apk
+      - name: Publish APK to "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: SimaStream latest APK
+          body: "أحدث نسخة من تطبيق SimaStream (arm64-v8a). حمّل ملف الـ APK أدناه وثبّته على جهاز الأندرويد."
+          files: ${{ steps.apk.outputs.path }}
