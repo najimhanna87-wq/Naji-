@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1280, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Naji TV — IPTV Player</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- شاشة التحميل -->
+  <div id="splash" class="splash">
+    <div class="splash-logo">Naji&nbsp;TV</div>
+    <div class="splash-spinner"></div>
+  </div>
+
+  <!-- الواجهة الرئيسية -->
+  <div id="app" class="app hidden">
+    <!-- الشريط الجانبي: التصنيفات -->
+    <aside id="categories" class="categories" aria-label="التصنيفات"></aside>
+
+    <!-- قائمة القنوات -->
+    <section id="channels" class="channels" aria-label="القنوات"></section>
+
+    <!-- منطقة المشغّل -->
+    <main class="player-wrap">
+      <video id="video" class="player" playsinline></video>
+      <div id="playerOverlay" class="player-overlay">
+        <div id="nowPlaying" class="now-playing"></div>
+        <div id="playerHint" class="player-hint">
+          اضغط <b>رجوع</b> للعودة للقائمة · <b>موافق</b> للتشغيل/الإيقاف
+        </div>
+      </div>
+      <div id="playerError" class="player-error hidden"></div>
+    </main>
+  </div>
+
+  <!-- شريط الحالة / التعليمات -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- مشغّل HLS: يُحمّل محلياً إن وُجد، ويتراجع للتشغيل الأصلي (native) -->
+  <script src="js/hls.min.js" onerror="window.__noHls=true"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

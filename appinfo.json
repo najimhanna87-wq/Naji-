@@ -1,0 +1,14 @@
+{
+  "id": "com.naji.tv",
+  "version": "1.0.0",
+  "vendor": "Naji",
+  "type": "web",
+  "main": "index.html",
+  "title": "Naji TV",
+  "icon": "assets/icon-192.png",
+  "largeIcon": "assets/icon-512.png",
+  "bgColor": "#0b0f17",
+  "iconColor": "#ff3d57",
+  "disableBackHistoryAPI": true,
+  "supportPortraitMode": false
+}

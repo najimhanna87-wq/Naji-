@@ -1,0 +1,16 @@
+{
+  "name": "Naji TV",
+  "short_name": "Naji TV",
+  "description": "مشغّل قنوات IPTV للتلفزيون والويب",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b0f17",
+  "theme_color": "#0b0f17",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
