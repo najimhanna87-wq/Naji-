@@ -22,9 +22,28 @@ Each recommended solution from the report maps to code here:
 | **B. Atomic cache writes** — temp-write → rename to avoid partial-write corruption | `src/progressCache.js` (`saveProgress`: unique temp file, `fsync`, atomic `rename`; per-item files isolate corruption; corrupt reads self-clean) |
 | **C. Fallback on stream error (auto-invalidation)** — on 401/403/read error, invalidate the token for that item and refetch immediately | `src/streamResolver.js` (`playWithRecovery`) |
 
+### Why it sometimes never self-heals
+
+If a power loss corrupts `updatedAt` into a **future** timestamp, a daily
+ETag/Timestamp sync thinks the cached entry is "fresh" and never refreshes it,
+so the dead token is kept indefinitely. `ProgressCache.getProgress` therefore
+rejects any record whose `updatedAt` is non-numeric, negative, or beyond a
+small clock-skew window — the entry is dropped and a clean fetch is forced.
+`isFresh(record, ttl)` builds on the same guarded timestamp so a poisoned entry
+can never be reported as fresh.
+
+### Corrupt-cache failover & reset
+
+- A corrupt/missing local entry no longer means losing the user's place:
+  `PlaybackController` falls back to a `cloudProgress(videoId)` last-good
+  position when one is provided, otherwise starts from 0. `openVideo` returns
+  `source: 'local' | 'cloud' | 'start'`.
+- `resetProgress(videoId)` / `ProgressCache.resetProgress` clears **one** item
+  only — the "Reset Progress for this episode" control.
+
 `src/playbackController.js` wires them into the load flow:
 
-1. Read **only** the saved playhead position from the cache.
+1. Read **only** the saved playhead position from the cache (cloud last-good as fallback).
 2. Resolve a **fresh** stream token (never reuse a saved one).
 3. Play with auto-invalidation + refetch on 401 / 403 / media read error.
 4. Persist position periodically (position only, written atomically).

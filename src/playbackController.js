@@ -20,13 +20,19 @@ export class PlaybackController {
    * @param {StreamResolver} opts.streamResolver
    * @param {number} [opts.saveIntervalMs=5000] Progress auto-save cadence.
    */
-  constructor({ progressCache, streamResolver, saveIntervalMs = 5000 }) {
+  constructor({ progressCache, streamResolver, cloudProgress, saveIntervalMs = 5000 }) {
     if (!progressCache) throw new Error('progressCache is required');
     if (!(streamResolver instanceof StreamResolver)) {
       throw new Error('streamResolver must be a StreamResolver');
     }
+    if (cloudProgress && typeof cloudProgress !== 'function') {
+      throw new Error('cloudProgress must be a function (videoId) => Promise<number|null>');
+    }
     this.progressCache = progressCache;
     this.streamResolver = streamResolver;
+    // Optional: fetch the last known-good position from the cloud. Used only
+    // as a fallback when local progress is missing or was dropped as corrupt.
+    this.cloudProgress = cloudProgress || null;
     this.saveIntervalMs = saveIntervalMs;
   }
 
@@ -34,19 +40,44 @@ export class PlaybackController {
    * Prepare an item for playback.
    * @param {string} videoId
    * @param {(descriptor: {url: string}) => Promise<any>} play Player hook.
-   * @returns {Promise<{resumeAt: number, result: any}>}
+   * @returns {Promise<{resumeAt: number, source: string, result: any}>}
    */
   async openVideo(videoId, play) {
-    // 1. Position only. Never a token.
+    // 1. Position only. Never a token. A corrupt local entry returns null
+    //    (it self-cleans), so we fall back to the cloud last-good point
+    //    rather than losing the user's place entirely.
+    let resumeAt = 0;
+    let source = 'start';
     const saved = await this.progressCache.getProgress(videoId);
-    const resumeAt = saved ? saved.positionSeconds : 0;
+    if (saved) {
+      resumeAt = saved.positionSeconds;
+      source = 'local';
+    } else if (this.cloudProgress) {
+      try {
+        const cloudPos = await this.cloudProgress(videoId);
+        if (Number.isFinite(cloudPos) && cloudPos >= 0) {
+          resumeAt = cloudPos;
+          source = 'cloud';
+        }
+      } catch {
+        // Cloud unavailable — resume from start rather than failing the open.
+      }
+    }
 
     // 2 + 3. Fresh token, with auto-invalidation retry.
     const result = await this.streamResolver.playWithRecovery(videoId, (descriptor) =>
       play({ ...descriptor, resumeAt }),
     );
 
-    return { resumeAt, result };
+    return { resumeAt, source, result };
+  }
+
+  /**
+   * User-facing "reset progress for this episode only" action.
+   * @param {string} videoId
+   */
+  async resetProgress(videoId) {
+    return this.progressCache.resetProgress(videoId);
   }
 
   /**

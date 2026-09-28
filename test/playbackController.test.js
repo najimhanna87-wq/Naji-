@@ -58,3 +58,42 @@ test('the full crash-recovery scenario self-heals immediately', async () => {
   assert.equal(plays, 2);
   assert.equal(getFetches(), 2);
 });
+
+test('falls back to cloud last-good position when local is missing/corrupt', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'pbc-'));
+  const progressCache = new ProgressCache(dir);
+  const streamResolver = new StreamResolver({
+    fetchStream: async (id) => ({ url: `https://cdn/${id}` }),
+  });
+  const controller = new PlaybackController({
+    progressCache,
+    streamResolver,
+    cloudProgress: async (id) => (id === 'ep3' ? 720 : null),
+  });
+
+  const { resumeAt, source } = await controller.openVideo('ep3', async () => 'ok');
+  assert.equal(resumeAt, 720);
+  assert.equal(source, 'cloud');
+});
+
+test('local progress wins over cloud', async () => {
+  const { controller } = await build();
+  const withCloud = new PlaybackController({
+    progressCache: controller.progressCache,
+    streamResolver: controller.streamResolver,
+    cloudProgress: async () => 999,
+  });
+  await withCloud.recordPosition('ep3', 120);
+  const { resumeAt, source } = await withCloud.openVideo('ep3', async () => 'ok');
+  assert.equal(resumeAt, 120);
+  assert.equal(source, 'local');
+});
+
+test('resetProgress clears that item only', async () => {
+  const { controller } = await build();
+  await controller.recordPosition('ep3', 300);
+  await controller.resetProgress('ep3');
+  const { resumeAt, source } = await controller.openVideo('ep3', async () => 'ok');
+  assert.equal(resumeAt, 0);
+  assert.equal(source, 'start');
+});

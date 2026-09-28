@@ -68,6 +68,52 @@ test('rejects negative or non-finite positions', async () => {
   await assert.rejects(() => cache.saveProgress('x', NaN));
 });
 
+test('rejects a future/poisoned timestamp so daily sync is not fooled', async () => {
+  const dir = await tmpDir();
+  const cache = new ProgressCache(dir);
+  // Simulate a power-loss write that persisted a far-future updatedAt.
+  await fs.writeFile(
+    path.join(dir, 'ep9.json'),
+    JSON.stringify({ videoId: 'ep9', positionSeconds: 42, updatedAt: Date.now() + 10 * 864e5 }),
+  );
+  // Treated as corrupt: dropped, so a clean fetch is forced (self-heal).
+  assert.equal(await cache.getProgress('ep9'), null);
+  await assert.rejects(() => fs.access(path.join(dir, 'ep9.json')));
+});
+
+test('rejects a non-numeric timestamp', async () => {
+  const dir = await tmpDir();
+  const cache = new ProgressCache(dir);
+  await fs.writeFile(
+    path.join(dir, 'ep9.json'),
+    JSON.stringify({ videoId: 'ep9', positionSeconds: 42, updatedAt: 'soon' }),
+  );
+  assert.equal(await cache.getProgress('ep9'), null);
+});
+
+test('accepts a small clock skew into the future', async () => {
+  const cache = new ProgressCache(await tmpDir());
+  const rec = await cache.saveProgress('ep1', 10);
+  // Saved with a real Date.now(); read back fine.
+  const got = await cache.getProgress('ep1');
+  assert.equal(got.positionSeconds, 10);
+  assert.ok(got.updatedAt <= Date.now() + 5 * 60 * 1000);
+  assert.equal(rec.videoId, 'ep1');
+});
+
+test('isFresh reflects TTL and resetProgress clears one item', async () => {
+  let clock = 1_000_000;
+  const cache = new ProgressCache(await tmpDir(), { now: () => clock });
+  await cache.saveProgress('ep1', 10);
+  const rec = await cache.getProgress('ep1');
+  assert.equal(cache.isFresh(rec, 1000), true);
+  clock += 5000;
+  assert.equal(cache.isFresh(rec, 1000), false);
+
+  await cache.resetProgress('ep1');
+  assert.equal(await cache.getProgress('ep1'), null);
+});
+
 test('sanitizes videoId into a safe filename', async () => {
   const dir = await tmpDir();
   const cache = new ProgressCache(dir);
