@@ -5,7 +5,9 @@
     "karpathy-skills": { "source": { "source": "github", "repo": "forrestchang/andrej-karpathy-skills" } },
     "thedotmack": { "source": { "source": "github", "repo": "thedotmack/claude-mem" } },
     "obsidian-skills": { "source": { "source": "github", "repo": "kepano/obsidian-skills" } },
-    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } }
+    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } },
+    "anthropic-agent-skills": { "source": { "source": "github", "repo": "anthropics/skills" } },
+    "claude-code-plugins": { "source": { "source": "github", "repo": "anthropics/claude-code" } }
   },
   "enabledPlugins": {
     "superpowers@superpowers-dev": true,
@@ -13,6 +15,8 @@
     "andrej-karpathy-skills@karpathy-skills": true,
     "claude-mem@thedotmack": true,
     "obsidian@obsidian-skills": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "example-skills@anthropic-agent-skills": true,
+    "code-review@claude-code-plugins": true
   }
 }
